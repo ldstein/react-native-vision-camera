@@ -8,6 +8,7 @@ import android.content.res.Configuration
 import android.hardware.camera2.*
 import android.util.Log
 import android.util.Range
+import android.util.Size
 import android.view.*
 import android.view.View.OnTouchListener
 import android.widget.FrameLayout
@@ -371,9 +372,11 @@ class CameraView(context: Context, private val frameProcessorThread: ExecutorSer
         // User has selected a custom format={}. Use that
         val format = DeviceFormat(format!!)
         Log.i(TAG, "Using custom format - photo: ${format.photoSize}, video: ${format.videoSize} @ $fps FPS")
-        previewBuilder.setTargetResolution(format.videoSize)
-        imageCaptureBuilder.setTargetResolution(format.photoSize)
-        videoCaptureBuilder.setTargetResolution(format.videoSize)
+        val resolutionVideo = Size(format.videoSize.height, format.videoSize.width) // flipped because it's in sensor orientation.
+        val resolutionPhoto = Size(format.photoSize.height, format.photoSize.width) // flipped because it's in sensor orientation.
+        previewBuilder.setTargetResolution(resolutionVideo)
+        imageCaptureBuilder.setTargetResolution(resolutionPhoto)
+        videoCaptureBuilder.setTargetResolution(resolutionVideo)
 
         fps?.let { fps ->
           if (format.frameRateRanges.any { it.contains(fps) }) {
