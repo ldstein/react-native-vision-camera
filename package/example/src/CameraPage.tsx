@@ -10,6 +10,7 @@ import {
   useCameraFormat,
   useFrameProcessor,
   VideoFile,
+  runAtTargetFps,
 } from 'react-native-vision-camera'
 import { Camera } from 'react-native-vision-camera'
 import { CONTENT_SPACING, CONTROL_BUTTON_SIZE, MAX_ZOOM_FACTOR, SAFE_AREA_PADDING, SCREEN_HEIGHT, SCREEN_WIDTH } from './Constants'
@@ -26,6 +27,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { useIsFocused } from '@react-navigation/core'
 import { examplePlugin } from './frame-processors/ExamplePlugin'
 import { exampleKotlinSwiftPlugin } from './frame-processors/ExampleKotlinSwiftPlugin'
+import { exampleQrScannerPlugin } from './frame-processors/ExampleQrScannerPlugin'
 import { usePreferredCameraDevice } from './hooks/usePreferredCameraDevice'
 
 const ReanimatedCamera = Reanimated.createAnimatedComponent(Camera)
@@ -52,6 +54,9 @@ export function CameraPage({ navigation }: Props): React.ReactElement {
   const [enableHdr, setEnableHdr] = useState(false)
   const [flash, setFlash] = useState<'off' | 'on'>('off')
   const [enableNightMode, setEnableNightMode] = useState(false)
+
+  // Frame processor crash testing
+  const [showCamera, setShowCamera] = useState(true);
 
   // camera device settings
   const [preferredDevice] = usePreferredCameraDevice()
@@ -174,14 +179,20 @@ export function CameraPage({ navigation }: Props): React.ReactElement {
   const frameProcessor = useFrameProcessor((frame) => {
     'worklet'
 
-    console.log(`${frame.timestamp}: ${frame.width}x${frame.height} ${frame.pixelFormat} Frame (${frame.orientation})`)
-    examplePlugin(frame)
-    exampleKotlinSwiftPlugin(frame)
-  }, [])
+    runAtTargetFps(15, () => {
+        'worklet';
+        exampleQrScannerPlugin(frame);
+    });
+    
+    // console.log(`${frame.timestamp}: ${frame.width}x${frame.height} ${frame.pixelFormat} Frame (${frame.orientation})`)
+    // examplePlugin(frame)
+    // exampleKotlinSwiftPlugin(frame);
+    
+  }, []);
 
   return (
     <View style={styles.container}>
-      {device != null && (
+      {device != null && showCamera && (
         <PinchGestureHandler onGestureEvent={onPinchGesture} enabled={isActive}>
           <Reanimated.View onTouchEnd={onFocusTap} style={StyleSheet.absoluteFill}>
             <TapGestureHandler onEnded={onDoubleTap} numberOfTaps={2}>
@@ -257,6 +268,9 @@ export function CameraPage({ navigation }: Props): React.ReactElement {
         </PressableOpacity>
         <PressableOpacity style={styles.button} onPress={() => navigation.navigate('CodeScannerPage')}>
           <IonIcon name="qr-code-outline" color="white" size={24} />
+        </PressableOpacity>
+        <PressableOpacity style={styles.button} onPress={() => setShowCamera(!showCamera)}>
+          <IonIcon name="bug" color={showCamera ? "green" : "red"} size={24} />
         </PressableOpacity>
       </View>
     </View>

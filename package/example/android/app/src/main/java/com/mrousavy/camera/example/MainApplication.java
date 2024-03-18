@@ -22,6 +22,7 @@ public class MainApplication extends Application implements ReactApplication {
   static {
     FrameProcessorPluginRegistry.addFrameProcessorPlugin("example_plugin", ExampleFrameProcessorPlugin::new);
     FrameProcessorPluginRegistry.addFrameProcessorPlugin("example_kotlin_swift_plugin", ExampleKotlinFrameProcessorPlugin::new);
+    FrameProcessorPluginRegistry.addFrameProcessorPlugin("example_qr_scanner_plugin", ExampleQRScannerPlugin::new);
   }
 
   private final ReactNativeHost mReactNativeHost =
